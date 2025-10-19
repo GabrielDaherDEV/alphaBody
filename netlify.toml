@@ -1,0 +1,5 @@
+# Este arquivo diz ao Netlify onde encontrar seu "mensageiro"
+# Caminho: netlify.toml
+
+[functions]
+  directory = "netlify/functions"
