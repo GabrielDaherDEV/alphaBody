@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnóstico de Transformação Corporal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .fade-out {
+      animation: fadeOut 0.5s ease-in-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      to {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+    }
+
+    .progress-bar-fill {
+      transition: width 0.5s ease-in-out;
+    }
+
+    .loading-bar-fill {
+      animation: fill-bar 2.5s ease-in-out forwards;
+    }
+
+    @keyframes fill-bar {
+      from {
+        width: 0%;
+      }
+
+      to {
+        width: 100%;
+      }
+    }
+
+    .option-button {
+      transition: all 0.2s ease-in-out;
+    }
+
+    .option-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .cta-button {
+      transition: all 0.3s ease;
+    }
+
+    .cta-button:hover {
+      transform: scale(1.05);
+      filter: brightness(1.1);
+    }
+
+    .range-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      background: #2563eb;
+      cursor: pointer;
+      border-radius: 50%;
+      margin-top: -8px;
+    }
+
+    .range-slider::-moz-range-thumb {
+      width: 24px;
+      height: 24px;
+      background: #2563eb;
+      cursor: pointer;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800">
+
+  <div id="app" class="max-w-4xl mx-auto p-4 md:p-8">
+
+    <div id="start-screen" class="text-center fade-in">
+      <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=2080&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Prato de comida saudável" class="w-full h-64 object-cover rounded-lg mb-8 shadow-lg">
+      <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Descubra o plano perfeito para transformar seu corpo em apenas 12 semanas</h1>
+      <p class="text-gray-600 mb-8 max-w-2xl mx-auto">Responda a algumas perguntas rápidas para receber um diagnóstico completo e um plano de ação personalizado.</p>
+      <button id="start-btn" class="bg-blue-600 text-white font-bold py-3 px-10 rounded-lg shadow-md hover:bg-blue-700 cta-button">
+        Começar meu diagnóstico gratuito
+      </button>
+    </div>
+
+    <div id="quiz-screen" class="hidden">
+      <div class="mb-8">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-sm font-medium text-blue-700">Progresso</span>
+          <span id="progress-text" class="text-sm font-medium text-blue-700">0%</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2.5">
+          <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full progress-bar-fill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div id="question-container">
+      </div>
+    </div>
+
+    <div id="social-proof-screen" class="hidden text-center p-8 bg-blue-50 border-2 border-blue-200 rounded-lg shadow-lg">
+      <svg class="w-16 h-16 text-blue-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <p id="social-proof-text" class="text-xl font-semibold text-gray-700 mb-6"></p>
+      <button id="continue-btn" class="bg-blue-600 text-white font-bold py-3 px-10 rounded-lg shadow-md hover:bg-blue-700 cta-button">
+        Continuar
+      </button>
+    </div>
+
+    <div id="loading-screen" class="hidden text-center">
+      <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Análise concluída!</h2>
+      <p class="text-gray-600 mb-8 max-w-2xl mx-auto">Estamos montando seu plano personalizado. Calculando seu potencial de perda de peso, plano alimentar e rotina de treinos. Isso pode levar alguns segundos...</p>
+      <div class="w-full bg-gray-200 rounded-full h-4 relative">
+        <div class="bg-blue-600 h-4 rounded-full loading-bar-fill"></div>
+        <span class="absolute inset-0 flex items-center justify-center text-sm font-medium text-white">Carregando...</span>
+      </div>
+    </div>
+
+    <div id="payment-screen" class="hidden text-center fade-in">
+      <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Análise concluída!</h2>
+      <p class="text-gray-600 mb-8 max-w-2xl mx-auto">Seu plano de transformação corporal personalizado está pronto para ser revelado.</p>
+
+      <div class="bg-white p-8 rounded-lg shadow-md border border-gray-200">
+        <h3 class="text-xl font-bold text-blue-600 mb-4">Desbloqueie seu Diagnóstico Completo + Plano de Ação</h3>
+        <p class="text-gray-700 mb-6">Receba um relatório em PDF detalhado com seu plano alimentar, rotina de treinos e estratégias para alcançar seu objetivo em tempo recorde.</p>
+        <p class="text-5xl font-bold mb-6">$5 <span class="text-lg font-normal text-gray-500">USD</span></p>
+        <button id="get-plan-btn" class="w-full max-w-md mx-auto bg-green-600 text-white font-bold py-4 px-10 rounded-lg shadow-lg hover:bg-green-700 cta-button text-xl">
+          Quero meu plano personalizado agora!
+        </button>
+      </div>
+    </div>
+
+    <div id="thank-you-screen" class="hidden text-center fade-in">
+      <h2 class="text-2xl md:text-3xl font-bold text-green-600 mb-4">Pagamento recebido! 🎉</h2>
+      <p class="text-gray-600 mb-8 max-w-2xl mx-auto">Seu plano está sendo gerado pela nossa IA e será enviado para o seu e-mail em alguns minutos. Fique de olho na sua caixa de entrada (e na pasta de spam)!</p>
+    </div>
+
+    <div id="results-screen" class="hidden fade-in">
+      <div class="text-center mb-12">
+        <h1 class="text-3xl md:text-4xl font-bold text-green-600 mb-4">Seu Plano de Transformação está pronto!</h1>
+        <p class="text-xl text-gray-700 max-w-3xl mx-auto">Descubra como perder até 8kg nos próximos 60 dias.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const quizData = [
+      // Bloco 1
+      {
+        question: "Qual é o seu principal objetivo ao buscar um novo plano de vida?",
+        options: ["Perder peso e gordura corporal", "Ganhar massa muscular e definição", "Ter mais energia e disposição no dia a dia", "Adotar um estilo de vida mais saudável a longo prazo"],
+        type: "radio"
+      },
+      {
+        question: "Se você pudesse estalar os dedos e mudar algo no seu corpo, o que seria?",
+        options: ["Diminuir a barriga", "Ter braços e peito mais definidos", "Me sentir menos inchado e mais leve", "Simplesmente me sentir bem na minha própria pele"],
+        type: "radio"
+      },
+      {
+        question: "Em uma escala de 1 a 5, quão urgente é para você atingir esse objetivo?",
+        type: "range",
+        min: 1,
+        max: 5,
+        labels: ["Apenas curioso", "Preciso de uma mudança AGORA"]
+      },
+      {
+        question: "O que mais te frustrou em tentativas anteriores de dieta ou treinos?",
+        options: ["Falta de resultados rápidos", "Dietas muito restritivas e difíceis de seguir", "Falta de motivação e disciplina", "Não saber por onde começar"],
+        type: "radio"
+      },
+      {
+        question: "Quando você se imagina alcançando seu objetivo, qual é o maior benefício que você vê?",
+        options: ["Mais confiança para ir à praia ou piscina", "Ter mais fôlego para brincar com os filhos/netos", "Melhorar minha saúde e evitar problemas futuros", "Me sentir mais atraente e confiante"],
+        type: "radio"
+      },
+      // Bloco 2
+      {
+        question: "Como você descreveria seu nível de estresse diário?",
+        options: ["Baixo, sou bem tranquilo", "Moderado, tenho picos de estresse", "Alto, vivo uma rotina estressante"],
+        type: "radio"
+      },
+      {
+        question: "Em média, quantas horas você dorme por noite?",
+        options: ["Menos de 5 horas", "Entre 5 e 7 horas", "Mais de 7 horas"],
+        type: "radio"
+      },
+      {
+        question: "Como é seu trabalho?",
+        options: ["Sentado a maior parte do dia (escritório)", "Requer algum movimento (vendas, etc.)", "Fisicamente exigente (construção, etc.)"],
+        type: "radio"
+      },
+      {
+        question: "Com que frequência você consome bebidas alcoólicas?",
+        options: ["Raramente ou nunca", "Apenas nos fins de semana", "Várias vezes por semana"],
+        type: "radio"
+      },
+      {
+        question: "Qual destes “prazeres culposos” é mais difícil para você resistir?",
+        options: ["Doces e sobremesas", "Frituras e salgadinhos", "Massas e pães", "Refrigerantes e bebidas açucaradas"],
+        type: "radio"
+      },
+      // Bloco 3
+      {
+        question: "Quanto tempo você tem para preparar o café da manhã?",
+        options: ["Menos de 5 minutos (preciso de algo rápido)", "10–15 minutos (consigo preparar algo)", "Tenho tempo, gosto de um café completo"],
+        type: "radio"
+      },
+      {
+        question: "Qual fonte de proteína você prefere no seu dia a dia?",
+        options: ["Carnes (vermelha, frango)", "Peixes e frutos do mar", "Ovos e laticínios", "Proteínas vegetais (feijão, lentilha, tofu)"],
+        type: "radio"
+      },
+      {
+        question: "Quantos copos de água você bebe por dia, em média?",
+        options: ["Quase nenhum", "1 a 3 copos", "4 a 6 copos", "Mais de 7 copos"],
+        type: "radio"
+      },
+      {
+        question: "Você tem alguma restrição alimentar?",
+        options: ["Não tenho restrições", "Intolerância à lactose", "Intolerância ao glúten", "Outra (vegetariano, etc.)"],
+        type: "radio"
+      },
+      {
+        question: "Das opções abaixo, qual tipo de lanche você mais gosta?",
+        options: ["Frutas", "Iogurtes e queijos", "Castanhas e sementes", "Barras de proteína"],
+        type: "radio"
+      },
+      // Bloco 4
+      {
+        question: "Qual seu nível atual de atividade física?",
+        options: ["Sedentário", "Levemente ativo", "Ativo", "Muito ativo"],
+        type: "radio"
+      },
+      {
+        question: "Onde você prefere se exercitar?",
+        options: ["Em casa", "Na academia", "Ao ar livre"],
+        type: "radio"
+      },
+      {
+        question: "Quanto tempo por sessão você tem disponível para treinar?",
+        options: ["15–20 minutos", "30–45 minutos", "1 hora ou mais"],
+        type: "radio"
+      },
+      {
+        question: "Que tipo de exercício te motiva mais?",
+        options: ["Musculação / Peso", "Corrida / Ciclismo / Cardio", "HIIT em casa", "Esportes (futebol, etc.)"],
+        type: "radio"
+      },
+      {
+        question: "Você estaria disposto a seguir um plano 100% personalizado se ele garantisse resultados em 12 semanas?",
+        options: ["Sim, estou comprometido!", "Tenho interesse em ver o plano"],
+        type: "radio"
+      }
+    ];
+
+    const socialProofMessages = [
+      "Você está no caminho certo. Junte-se a mais de 250.000 homens que, como você, decidiram tomar o controle de suas vidas com nosso método.",
+      "Impressionante. Sabia que, segundo estudos de Harvard, homens que otimizam sua nutrição podem aumentar sua disposição em até 40%? Estamos calculando seu potencial.",
+      "Falta pouco! Nossos membros relatam que seguir um plano alimentar que respeita suas preferências aumenta a chance de sucesso em 3x. A personalização é a chave."
+    ];
+
+    let currentQuestionIndex = 0;
+    const userAnswers = {};
+
+    const startScreen = document.getElementById('start-screen');
+    const quizScreen = document.getElementById('quiz-screen');
+    const socialProofScreen = document.getElementById('social-proof-screen');
+    const loadingScreen = document.getElementById('loading-screen');
+    const resultsScreen = document.getElementById('results-screen');
+    const questionContainer = document.getElementById('question-container');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+
+    // VARIÁVEIS NOVAS
+    const paymentScreen = document.getElementById('payment-screen');
+    const thankYouScreen = document.getElementById('thank-you-screen');
+
+
+    document.getElementById('start-btn').addEventListener('click', startQuiz);
+    document.getElementById('continue-btn').addEventListener('click', continueQuiz);
+
+    function startQuiz() {
+      startScreen.classList.add('hidden');
+      quizScreen.classList.remove('hidden');
+      displayQuestion();
+    }
+
+    function continueQuiz() {
+      socialProofScreen.classList.add('hidden');
+      quizScreen.classList.remove('hidden');
+      displayQuestion();
+    }
+
+    function displayQuestion() {
+      const questionData = quizData[currentQuestionIndex];
+      questionContainer.innerHTML = ''; // Limpa a pergunta anterior
+      questionContainer.classList.remove('fade-out');
+      questionContainer.classList.add('fade-in');
+
+      const questionElement = document.createElement('div');
+      questionElement.className = 'bg-white p-8 rounded-lg shadow-md';
+
+      let content = `<h2 class="text-2xl font-bold mb-6 text-center">${questionData.question}</h2>`;
+
+      if (questionData.type === 'radio') {
+        content += '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
+        questionData.options.forEach(option => {
+          content += `<button class="option-button w-full text-left p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50" data-value="${option}">${option}</button>`;
+        });
+        content += '</div>';
+      } else if (questionData.type === 'range') {
+        content += `
+                <div class="flex flex-col items-center">
+                    <input type="range" min="${questionData.min}" max="${questionData.max}" value="${Math.ceil(questionData.max / 2)}" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-slider mb-2">
+                    <div class="w-full flex justify-between text-sm text-gray-500">
+                        <span>${questionData.labels[0]}</span>
+                        <span>${questionData.labels[1]}</span>
+                    </div>
+                     <button class="mt-8 bg-blue-600 text-white font-bold py-2 px-8 rounded-lg shadow-md hover:bg-blue-700 cta-button" id="range-submit">Confirmar</button>
+                </div>
+            `;
+      }
+
+      questionElement.innerHTML = content;
+      questionContainer.appendChild(questionElement);
+
+      if (questionData.type === 'radio') {
+        const buttons = questionContainer.querySelectorAll('.option-button');
+        buttons.forEach(button => {
+          button.addEventListener('click', () => selectAnswer(button.dataset.value));
+        });
+      } else if (questionData.type === 'range') {
+        document.getElementById('range-submit').addEventListener('click', () => {
+          const value = questionContainer.querySelector('input[type="range"]').value;
+          selectAnswer(value);
+        });
+      }
+
+      updateProgress();
+    }
+
+    // ======================================================
+    // FUNÇÃO selectAnswer ATUALIZADA
+    // ======================================================
+    function selectAnswer(answer) {
+      // Salva a pergunta e a resposta para facilitar o envio para a IA
+      const question = quizData[currentQuestionIndex].question;
+      userAnswers[question] = answer;
+
+      questionContainer.classList.remove('fade-in');
+      questionContainer.classList.add('fade-out');
+
+      setTimeout(() => {
+        currentQuestionIndex++;
+        if (currentQuestionIndex === 5 || currentQuestionIndex === 10 || currentQuestionIndex === 15) {
+          showSocialProof();
+        } else if (currentQuestionIndex < quizData.length) {
+          displayQuestion();
+        } else {
+          // AQUI ESTÁ A MUDANÇA: Em vez de showLoading, chamamos a tela de pagamento
+          showPaymentScreen();
+        }
+      }, 500); // Espera a animação de fade-out
+    }
+
+    function updateProgress() {
+      const progress = Math.round((currentQuestionIndex / quizData.length) * 100);
+      progressBar.style.width = `${progress}%`;
+      progressText.textContent = `${progress}%`;
+    }
+
+    function showSocialProof() {
+      quizScreen.classList.add('hidden');
+      socialProofScreen.classList.remove('hidden');
+      socialProofScreen.classList.add('fade-in');
+
+      const messageIndex = (currentQuestionIndex / 5) - 1;
+      document.getElementById('social-proof-text').textContent = socialProofMessages[messageIndex];
+    }
+
+    // ======================================================
+    // FUNÇÃO showLoading SUBSTITUÍDA POR showPaymentScreen
+    // ======================================================
+    function showPaymentScreen() {
+      quizScreen.classList.add('hidden');
+      loadingScreen.classList.add('hidden'); // Garante que o loading não apareça
+      paymentScreen.classList.remove('hidden');
+
+      // Salva as respostas no navegador ANTES do usuário ir pagar
+      localStorage.setItem('quizAnswers', JSON.stringify(userAnswers));
+
+      // Adiciona o clique ao botão de pagamento
+      document.getElementById('get-plan-btn').addEventListener('click', () => {
+        // Redireciona para o seu link do Gumroad!
+        window.location.href = "https://alphabody.gumroad.com/l/hzbri";
+      });
+    }
+
+    // ======================================================
+    // NOVO CÓDIGO PARA CAPTURAR RETORNO DO GUMROAD E ENVIAR AO ZAPIER
+    // ======================================================
+    window.addEventListener('load', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      // O Gumroad nos redireciona com um parâmetro que configuramos ('status=success')
+      const paymentSuccess = urlParams.get('status') === 'success';
+
+      if (paymentSuccess) {
+        // Esconde todas as outras telas
+        startScreen.classList.add('hidden');
+        quizScreen.classList.add('hidden');
+        paymentScreen.classList.add('hidden');
+        resultsScreen.classList.add('hidden');
+        loadingScreen.classList.add('hidden');
+
+        // Mostra a tela de agradecimento
+        thankYouScreen.classList.remove('hidden');
+
+        // Recupera as respostas que salvamos
+        const savedAnswers = localStorage.getItem('quizAnswers');
+        const userEmail = urlParams.get('email'); // Captura o email da URL
+
+        if (savedAnswers) {
+          const dataToSend = {
+            ...JSON.parse(savedAnswers),
+            customer_email: userEmail // Adiciona o email do cliente aos dados
+          };
+
+          // Envia os dados para o Zapier
+          sendDataToAutomation(dataToSend);
+
+          // Limpa o armazenamento
+          localStorage.removeItem('quizAnswers');
+        }
+      }
+    });
+
+    async function sendDataToAutomation(answers) {
+      // AQUI ESTÁ SEU LINK DO ZAPIER!
+      const webhookUrl = 'https://hooks.zapier.com/hooks/catch/25030361/urdhuxe/';
+
+      // Código de envio ativado:
+      try {
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(answers),
+        });
+
+        if (response.ok) {
+          console.log('Respostas enviadas com sucesso para a automação!');
+        } else {
+          console.error('Falha ao enviar as respostas.');
+        }
+      } catch (error) {
+        console.error('Erro de conexão:', error);
+      }
+    }
+
+  </script>
+</body>
+
+</html>
