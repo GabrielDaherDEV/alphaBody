@@ -285,6 +285,11 @@
         question: "Você estaria disposto a seguir um plano 100% personalizado se ele garantisse resultados em 12 semanas?",
         options: ["Sim, estou comprometido!", "Tenho interesse em ver o plano"],
         type: "radio"
+      },
+      {
+        question: "Análise quase completa! Digite seu melhor e-mail para receber seu plano:",
+        type: "email",
+        placeholder: "seuemail@exemplo.com"
       }
     ];
 
@@ -328,7 +333,7 @@
 
     function displayQuestion() {
       const questionData = quizData[currentQuestionIndex];
-      questionContainer.innerHTML = ''; // Limpa a pergunta anterior
+      questionContainer.innerHTML = '';
       questionContainer.classList.remove('fade-out');
       questionContainer.classList.add('fade-in');
 
@@ -355,6 +360,15 @@
                 </div>
             `;
       }
+      else if (questionData.type === 'email') {
+        content += `
+            <div class="flex flex-col items-center">
+                <input type="email" id="email-input" placeholder="${questionData.placeholder}" class="w-full max-w-md p-4 border-2 border-gray-200 rounded-lg text-center" required>
+                <p class="text-sm text-gray-500 mt-4">Você será redirecionado para o pagamento de $5 após o envio.</p>
+                <button class="mt-6 bg-green-600 text-white font-bold py-3 px-10 rounded-lg shadow-md hover:bg-green-700 cta-button" id="submit-quiz-btn">Finalizar e Ir para Pagamento</button>
+            </div>
+        `;
+      }
 
       questionElement.innerHTML = content;
       questionContainer.appendChild(questionElement);
@@ -370,15 +384,14 @@
           selectAnswer(value);
         });
       }
+      else if (questionData.type === 'email') {
+        document.getElementById('submit-quiz-btn').addEventListener('click', submitQuizAndPay);
+      }
 
       updateProgress();
     }
 
-    // ======================================================
-    // FUNÇÃO selectAnswer ATUALIZADA
-    // ======================================================
     function selectAnswer(answer) {
-      // Salva a pergunta e a resposta para facilitar o envio para a IA
       const question = quizData[currentQuestionIndex].question;
       userAnswers[question] = answer;
 
@@ -392,10 +405,9 @@
         } else if (currentQuestionIndex < quizData.length) {
           displayQuestion();
         } else {
-          // AQUI ESTÁ A MUDANÇA: Em vez de showLoading, chamamos a tela de pagamento
           showPaymentScreen();
         }
-      }, 500); // Espera a animação de fade-out
+      }, 500);
     }
 
     function updateProgress() {
@@ -413,67 +425,51 @@
       document.getElementById('social-proof-text').textContent = socialProofMessages[messageIndex];
     }
 
-    // ======================================================
-    // FUNÇÃO showLoading SUBSTITUÍDA POR showPaymentScreen
-    // ======================================================
     function showPaymentScreen() {
       quizScreen.classList.add('hidden');
-      loadingScreen.classList.add('hidden'); // Garante que o loading não apareça
+      loadingScreen.classList.add('hidden');
       paymentScreen.classList.remove('hidden');
 
-      // Salva as respostas no navegador ANTES do usuário ir pagar
       localStorage.setItem('quizAnswers', JSON.stringify(userAnswers));
 
-      // Adiciona o clique ao botão de pagamento
       document.getElementById('get-plan-btn').addEventListener('click', () => {
-        // Redireciona para o seu link do Gumroad!
         window.location.href = "https://alphabody.gumroad.com/l/hzbri";
       });
     }
 
-    // ======================================================
-    // NOVO CÓDIGO PARA CAPTURAR RETORNO DO GUMROAD E ENVIAR AO ZAPIER
-    // ======================================================
     window.addEventListener('load', () => {
       const urlParams = new URLSearchParams(window.location.search);
-      // O Gumroad nos redireciona com um parâmetro que configuramos ('status=success')
       const paymentSuccess = urlParams.get('status') === 'success';
 
       if (paymentSuccess) {
-        // Esconde todas as outras telas
         startScreen.classList.add('hidden');
         quizScreen.classList.add('hidden');
         paymentScreen.classList.add('hidden');
         resultsScreen.classList.add('hidden');
         loadingScreen.classList.add('hidden');
 
-        // Mostra a tela de agradecimento
         thankYouScreen.classList.remove('hidden');
 
-        // Recupera as respostas que salvamos
         const savedAnswers = localStorage.getItem('quizAnswers');
-        const userEmail = urlParams.get('email'); // Captura o email da URL
+        const userEmail = urlParams.get('email');
 
         if (savedAnswers) {
           const dataToSend = {
             ...JSON.parse(savedAnswers),
-            customer_email: userEmail // Adiciona o email do cliente aos dados
+            customer_email: userEmail
           };
 
-          // Envia os dados para o Zapier
           sendDataToAutomation(dataToSend);
 
-          // Limpa o armazenamento
           localStorage.removeItem('quizAnswers');
         }
       }
     });
 
     async function sendDataToAutomation(answers) {
-      // AQUI ESTÁ SEU LINK DO ZAPIER!
+
       const webhookUrl = '/.netlify/functions/send-to-zapier';
 
-      // Código de envio ativado:
       try {
         const response = await fetch(webhookUrl, {
           method: 'POST',
@@ -490,6 +486,43 @@
         }
       } catch (error) {
         console.error('Erro de conexão:', error);
+      }
+    }
+    async function submitQuizAndPay() {
+      const emailInput = document.getElementById('email-input');
+      const email = emailInput.value;
+
+      // Validação simples de email
+      if (!email || !email.includes('@') || !email.includes('.')) {
+        alert('Por favor, insira um e-mail válido.');
+        return;
+      }
+
+      // Adiciona o email ao objeto de respostas
+      const question = quizData[currentQuestionIndex].question;
+      userAnswers[question] = email;
+      userAnswers['customer_email'] = email; // Chave simples para o Zapier
+
+      // Desativa o botão e mostra um loading
+      const submitButton = document.getElementById('submit-quiz-btn');
+      submitButton.disabled = true;
+      submitButton.textContent = 'Enviando...';
+
+      questionContainer.innerHTML = '<h2 class="text-2xl font-bold mb-6 text-center">Salvando sua análise...</h2><p class="text-center">Você será redirecionado para o pagamento em instantes.</p>';
+
+      // Envia os dados para a automação ANTES de redirecionar
+      try {
+        await sendDataToAutomation(userAnswers);
+
+        // SUCESSO: Redireciona para o pagamento
+        window.location.href = "https://alphabody.gumroad.com/l/hzbri";
+
+      } catch (error) {
+        // FALHA: Avisa o usuário e reativa o formulário
+        console.error('Falha ao enviar dados para automação:', error);
+        alert('Ocorreu um erro ao salvar suas respostas. Por favor, tente novamente.');
+        // Volta para a pergunta de email
+        displayQuestion();
       }
     }
 
