@@ -498,30 +498,25 @@
         return;
       }
 
-      // Adiciona o email ao objeto de respostas
       const question = quizData[currentQuestionIndex].question;
       userAnswers[question] = email;
-      userAnswers['customer_email'] = email; // Chave simples para o Zapier
+      userAnswers['customer_email'] = email;
 
-      // Desativa o botão e mostra um loading
+
       const submitButton = document.getElementById('submit-quiz-btn');
       submitButton.disabled = true;
       submitButton.textContent = 'Enviando...';
 
       questionContainer.innerHTML = '<h2 class="text-2xl font-bold mb-6 text-center">Salvando sua análise...</h2><p class="text-center">Você será redirecionado para o pagamento em instantes.</p>';
 
-      // Envia os dados para a automação ANTES de redirecionar
       try {
         await sendDataToAutomation(userAnswers);
 
-        // SUCESSO: Redireciona para o pagamento
         window.location.href = "https://alphabody.gumroad.com/l/hzbri";
 
       } catch (error) {
-        // FALHA: Avisa o usuário e reativa o formulário
         console.error('Falha ao enviar dados para automação:', error);
         alert('Ocorreu um erro ao salvar suas respostas. Por favor, tente novamente.');
-        // Volta para a pergunta de email
         displayQuestion();
       }
     }
